@@ -30,3 +30,16 @@ body{
     border-color: #ffffffb6 !important;
     box-shadow: 5px 5px 10px rgba(255, 255, 255, 0.616);
   }
+
+.rotation {
+  animation: rotation 8s infinite linear;
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}

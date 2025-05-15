@@ -17,3 +17,48 @@ export const checkAuthStatus = async () => {
     const data = await res.data;
     return data;
 }
+
+export const sentChatRequest = async (message: string) => {
+    const res = await axios.post("/chat/new", {message});
+    if (res.status !== 200) {
+        throw new Error("Unable to send message")
+    }
+    const data = await res.data;
+    return data;
+}
+
+export const getUserChats = async () => {
+    const res = await axios.get("/chat/all-chats");
+    if (res.status !== 201) {
+        throw new Error("Unable get chats from user")
+    }
+    const data = await res.data;
+    return data;
+}
+
+export const delteteUserChats = async () => {
+    const res = await axios.delete("/chat/deltete-all-chats");
+    if (res.status !== 201) {
+        throw new Error("Unable to delete chats from user")
+    }
+    const data = await res.data;
+    return data;
+}
+
+export const userLogout = async () => {
+    const res = await axios.get("/user/logout");
+    if (res.status !== 201) {
+        throw new Error("Unable to Logout")
+    }
+    const data = await res.data;
+    return data;
+}
+
+export const SignupUser = async (name: string, email: string, password: string) => {
+    const res = await axios.post("/user/signup", {name, email, password});
+    if (res.status !== 201) {
+        throw new Error("Signup failed");
+    }
+    const data = await res.data;
+    return data;
+}

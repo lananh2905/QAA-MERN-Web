@@ -1,11 +1,75 @@
-import React from "react";
-import { Box, Avatar, Typography, Button } from "@mui/material";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Box, Avatar, Typography, Button,  IconButton } from "@mui/material";
 import { red } from "@mui/material/colors"
 import { useAuth } from "../context/AuthContext";
+import { ChatItem } from "../components/chat/ChatItem";
+import { IoMdSend } from "react-icons/io";
+import { delteteUserChats, getUserChats, sentChatRequest } from "../helpers/api-communicator";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+
+type Massage = {
+    role: string,
+    content: string,
+}
 
 const Chat = () => {
 
+    const nav = useNavigate();
+
+    const inputRef = useRef<HTMLInputElement|null>(null);
+
     const auth = useAuth();
+
+    const [chatMessage, setChatmessage] = useState<Massage[]>([]);
+
+    // Handle press send message
+    const handleSubmit = async () => {
+        const content = inputRef.current?.value as string;
+        if(inputRef && inputRef.current) {
+            inputRef.current.value = "";
+        }
+        const newMessage = {role: "user", content };
+        setChatmessage((prev) => [...prev, newMessage]);
+        const chatData = await sentChatRequest(content);
+        setChatmessage([...chatData]);
+    }
+
+    // Delete the current conversations
+    const handleDeleteChats = async () => {
+        try {
+            toast.loading("Deleting chats", {id: "deletechats"})
+            await delteteUserChats();
+            setChatmessage([]);
+            toast.success("Delete chats successfully", {id: "deletechats"})
+        } catch (error)
+        {
+            console.log(error);
+            toast.error("Delete chats Failed", {id: "deletechats"})
+        }
+    }
+
+    // Load chats of user from database
+    useLayoutEffect(() => {
+        if(auth?.isLoggedIn && auth.user) {
+            toast.loading("Loading Chats", {id: "loadchats"})
+            getUserChats().then((data) => {
+                setChatmessage([...data.chats]);
+                toast.success("Load Chats successfully", {id: "loadchats"})
+            }).catch(err => {
+                console.log(err);
+                toast.error("Loading Chats Failed", {id: "loadchats"});
+            })
+        }
+    }, [auth]);
+
+    useEffect(() => {
+        if(!auth?.user) {
+            nav("/login");
+        }
+
+    }, [auth]);
+
     return(
         <Box sx={{ 
             display:'flex', 
@@ -47,7 +111,9 @@ const Chat = () => {
                         Education, etc. But avoid sharing personal information.
                     </Typography>
 
-                    <Button sx={{
+                    <Button 
+                        onClick={handleDeleteChats}
+                        sx={{
                         width:"200px", 
                         my: "auto", 
                         color:"white", 
@@ -83,9 +149,41 @@ const Chat = () => {
                     flexDirection: "column", 
                     overflow: "scroll", 
                     overflowX: "hidden",
+                    overflowY: 'auto',
                     scrollBehavior: "smooth",
-                    overflowY: "auto",
-                }}></Box>
+                }}>
+                    {chatMessage.map((chat, index) => (
+                        //@ts-ignore
+                        <ChatItem content={chat.content} role={chat.role} key={index}/>
+                    ))}
+                </Box>
+                <div style={{
+                    width:"100%", 
+                    padding: "20px", 
+                    borderRadius: 8, 
+                    backgroundColor: "rgb(17, 27, 39)",
+                    display: 'flex',
+                    margin: "auto",
+
+                }}>
+                    <input 
+                        ref={inputRef}
+                        type="text" 
+                        style={{ 
+                            width: "100%", 
+                            backgroundColor: "transparent", 
+                            padding: "10px", 
+                            border: "none", 
+                            outline: "none", 
+                            color: "white", 
+                            fontSize: "20px",
+                    }}>
+                    </input>
+                    <IconButton onClick= {handleSubmit} sx={{ml: "auto", color: "white"}}>
+                        <IoMdSend/>
+                    </IconButton>
+                </div>
+
             </Box>
         </Box>
     );

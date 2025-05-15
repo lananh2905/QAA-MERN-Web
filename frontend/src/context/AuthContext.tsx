@@ -1,5 +1,5 @@
 // Check user login or not
-import {checkAuthStatus, LoginUser} from "../helpers/api-communicator";
+import {checkAuthStatus, LoginUser, SignupUser, userLogout} from "../helpers/api-communicator";
 import {createContext, ReactNode, useContext, useEffect, useState} from "react";
 
 type User = {
@@ -35,14 +35,27 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
 
      const login = async (email: string, password: string) => {
         const data = await LoginUser(email, password);
-        console.log(data);
+
         if (data) {
             setUser({name: data.name, email: data.email});
             setIsLoggedIn(true);
         }
      };
-     const signup = async (name: string, email: string, password: string) => {};
-     const logout = async () => {};
+     const signup = async (name: string, email: string, password: string) => {
+        const data = await SignupUser(name, email, password);
+
+        if (data) {
+            setUser({name: data.name, email: data.email});
+            setIsLoggedIn(true);
+        }
+     };
+     
+     const logout = async () => {
+        await userLogout();
+        setIsLoggedIn(false);
+        setUser(null);
+        window.location.reload();
+     };
 
      const value  = {
         isLoggedIn,
@@ -56,5 +69,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
         {children}
     </AuthContext.Provider>
 };
+
+
 
 export const useAuth = () => useContext(AuthContext);

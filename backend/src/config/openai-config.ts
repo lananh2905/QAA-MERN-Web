@@ -3,7 +3,7 @@ config();
 
 import { OpenAI } from "openai";
 
-export const client = new OpenAI({
-	baseURL: "https://router.huggingface.co/novita/v3/openai",
-	apiKey: process.env.HUGGINGFACE_API_KEY,
+export const openai = new OpenAI({
+	baseURL: 'https://api.deepseek.com',
+	apiKey: process.env.HUGGINGFACE_API_KEY
 });
