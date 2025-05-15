@@ -11,9 +11,16 @@ const chatSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    content: {
+    context: {
         type: String,
         required: true,
+    },    
+    question: {
+        type: String,
+        required: true,
+    },
+    score: {
+        type: Number,
     }
 });
 

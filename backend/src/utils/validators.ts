@@ -43,7 +43,8 @@ const signupValidator = [
 
 // Chat completion validator
 const chatCompletionValidation = [
-    body("message").notEmpty().withMessage("Massage is required"),
+    body("context").notEmpty().withMessage("Context is required"),
+    body("question").notEmpty().withMessage("Question is required")
 ];
 
 export { validate, signupValidator, loginValidator, chatCompletionValidation };

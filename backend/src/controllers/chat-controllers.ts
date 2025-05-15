@@ -12,71 +12,60 @@ export const generateChatCompletion = async (
     ) => {
 
     try {
+      
 
-      const { message } = req.body;
+      const { context, question, parameters } = req.body;
+
+      if (!context || !question) {
+        return res.status(400).json({ message: "Context and question are required" });
+      }
 
       const user = await User.findById(res.locals.jwtData.id);
       if (!user) {
           return res.status(401).json({message: "User not registered OR Token expired"});
       }
 
-      // Create type of chatMessage
-      type ChatMessage = {
-        role: "system" | "user" | "assistant";
-        content: string;
-      };
 
-      // grab chats of user
-      const chats: ChatMessage[] = user.chats.map(({ role, content }) => ({
-        role: role as ChatMessage["role"],
-        content
-      }));
+      user.chats.push({role: "user", context: context,  question: question })
 
-      chats.push({ content: message, role: "user"});
-      user.chats.push({ content: message, role: "user" })
-
-      // call api from localhost
-      const prompt = chats
-        .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
-        .join("\n") + "\nAssistant:";
-
-      const response = await axios.post('http://localhost:11434/api/generate', {
-        model: 'deepseek-r1:1.5b',
-        prompt,
-        stream: false,
-        logprobs: false,
-      });
-
-      const rawResponse = response.data.response
-
-        
-      const cleaned = rawResponse.replace(/<think>[\s\S]*?<\/think>/g, '');
+      // call api from hugging face
       
-      cleaned
-          .split('\n')
-          .map(line => line.trim())
-          .filter(line => line !== '')
-          .join('\n');
+      const response = await fetch("https://gty4rt35e4w5hr4k.us-east4.gcp.endpoints.huggingface.cloud", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.HUGGINGFACE_API_KEY}` || "",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          inputs: {
+            question,
+            context,
+          },
+          options: {
+            wait_for_model: true
+      }})
+      });
+      if (!response.ok) {
+        throw new Error(`Hugging Face API error: ${response.statusText}`);
+      }
 
-
+      const result = await response.json();
 
       // Add chat reponse into user
-      user.chats.push({ role: "assistant", content: cleaned});
+      user.chats.push({ role: "assistant", context: context, question: result.answer, score: result.score});
       await user.save();
-            
-      return res.status(200).json(user.chats);
 
-    } catch (err) {
-      console.log(err.message)
-      res.status(500).json({
-        message: "Something wrong with Model",
-        err
-      });  
+      return res.status(200).json(user.chats); 
 
-    }
-    
+    }  catch (err: any) {
+        console.error("Error generating chat completion:", err);
+        res.status(500).json({
+          message: "Something went wrong while generating the answer",
+          error: err.message,
+        });
+      }
 
-};
+      };
 
 
 // Get all chats of users
