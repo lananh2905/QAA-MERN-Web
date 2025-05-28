@@ -25,64 +25,77 @@ function isCodeBlock(str: string) {
     }
 }
 
-export const ChatItem = ({role, context, question} : {role: string, context: string, question: string}) => {
+export const ChatItem = ({role, context, question, score} : {role: string, context: string, question: string, score: number}) => {
 
     const auth = useAuth();
     const messageBlocks = extractCodeFromString(question);
+    // UpperCase first letter
+    question = question.charAt(0).toUpperCase() + question.slice(1);
 
     return (
         role === "assistant" ? (
-            <Box sx ={{
+            <Box 
+                display={"flex"}
+                flexDirection={"column"}
+                sx ={{
                 display: "flex",
-                p: 2,
-                bgcolor: "#004d5612",
-                my: 2,
-                gap: 2
+                p: 1,
+                bgcolor: "#4A3341",
+                borderRadius: 5,
+                my: 1,
             }}>
-                <Avatar sx ={{ml: "0"}}>
-                    <img src="openai.png" alt="openai" width={"30px"} />
-                </Avatar> 
-                <Box>
+                <Box display={"flex"} flexDirection={"row"} sx={{gap: 1, marginRight: "20px"}}>
+                    <Avatar sx ={{ml: "0", scale: 0.8}}>
+                        <img src="openai.png" alt="openai" width={"25px"} />
+                    </Avatar> 
+                    <Box sx={{marginY: "auto"}}>
 
-                    {!messageBlocks && (
-                        <Typography sx={{ fontSize: "20px"}}>{question}</Typography>
-                    )}
-                    {
-                        messageBlocks && 
-                        messageBlocks.length && 
-                        messageBlocks.map(
-                            (block) => isCodeBlock(block) ? (
-                                <SyntaxHighlighter 
-                                    style={coldarkDark} 
-                                    language="javascript"
-                                >
-                                 {block}
-                                </SyntaxHighlighter>
-                            ) : (
-                                <Typography fontSize={'20px'}>{block}</Typography>
+                        {!messageBlocks && (
+                            <Typography sx={{ fontSize: "12px"}}>{question}</Typography>
+                        )}
+                        {
+                            messageBlocks && 
+                            messageBlocks.length && 
+                            messageBlocks.map(
+                                (block) => isCodeBlock(block) ? (
+                                    <SyntaxHighlighter 
+                                        style={coldarkDark} 
+                                        language="javascript"
+                                    >
+                                    {block}
+                                    </SyntaxHighlighter>
+                                ) : (
+                                    <Typography fontSize={'12px'}>{block}</Typography>
+                                )
                             )
-                        )
-                    }
+                        }
 
+                    </Box>
                 </Box>
+                <Box sx={{mx: "30px"}}>
+                    <Typography fontSize={"12px"}>Score: {score.toFixed(2)}</Typography>
+                </Box>
+
             </Box> 
         ) : (
         <Box display={"flex"} flexDirection={"column"}>
 
             <Box sx ={{
                 display: "flex",
-                p: 2,
+                p: 1,
                 bgcolor: "#004d56",
-                gap: 2,
-                my: 2,
+                gap: 1,
+                my: 1,
+                borderRadius: 5,
+                
             }}>
-                <Avatar sx ={{ml: "0", bgcolor: "black", color: "white"}}>
-                    <img src="context-icon.png" alt="context-icon" width={"32px"} />
+                <Avatar sx ={{ml: "0", bgcolor: "black", color: "white", scale: 0.8}}>
+                    <img src="context-icon.png" alt="context-icon" width={"25px"} />
                 </Avatar> 
                 <Box>
 
                     {!messageBlocks && (
-                        <Typography sx={{ fontSize: "20px"}}>{context}</Typography>
+                        <Typography sx={{ fontSize: "12px", textAlign: "justify", marginRight: "20px"}}>{context}</Typography>
                     )}
                     {
                         messageBlocks && 
@@ -96,7 +109,7 @@ export const ChatItem = ({role, context, question} : {role: string, context: str
                                  {block}
                                 </SyntaxHighlighter>
                             ) : (
-                                <Typography fontSize={'20px'}>{block}</Typography>
+                                <Typography sx={{ fontSize: "12px", textAlign: "justify" , marginRight: "20px"}}>{block}</Typography>
                             )
                         )
                     }
@@ -106,19 +119,20 @@ export const ChatItem = ({role, context, question} : {role: string, context: str
 
             <Box sx ={{
                 display: "flex",
-                p: 2,
+                p: 1,
                 bgcolor: "#004d56",
-                gap: 2,
-                my: 2,
+                gap: 1,
+                my: 1,
+                borderRadius: 5
             }}>
-                <Avatar sx ={{ml: "0", bgcolor: "black", color: "white"}}>
+                <Avatar sx ={{ml: "0", bgcolor: "black", color: "white", scale: 0.8}}>
                     { auth?.user?.name[0] }
                     { auth?.user?.name.split(" ")[1][0] }
                 </Avatar> 
                 <Box>
 
                     {!messageBlocks && (
-                        <Typography sx={{ fontSize: "20px"}}>{question}</Typography>
+                        <Typography sx={{ marginY: "10px", fontSize: "12px", textAlign: "justify", marginRight: "20px"}}>{question}</Typography>
                     )}
                     {
                         messageBlocks && 
@@ -132,7 +146,7 @@ export const ChatItem = ({role, context, question} : {role: string, context: str
                                  {block}
                                 </SyntaxHighlighter>
                             ) : (
-                                <Typography fontSize={'20px'}>{block}</Typography>
+                                <Typography sx={{ fontSize: "12px", textAlign: "justify", marginRight: "20px"}}>{block}</Typography>
                             )
                         )
                     }

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Box, Avatar, Typography, Button,  IconButton, TextField } from "@mui/material";
+import { Box, Avatar, Typography, Button,  IconButton, TextField, Alert, Snackbar, useMediaQuery } from "@mui/material";
 import { red } from "@mui/material/colors"
 import { useAuth } from "../context/AuthContext";
 import { ChatItem } from "../components/chat/ChatItem";
@@ -18,6 +18,12 @@ const Chat = () => {
 
     const nav = useNavigate();
 
+    const isSmallScreen = useMediaQuery('(max-width: 1200px');
+
+    const messageEndRef = useRef<HTMLInputElement|null>(null);
+
+    const [showAlert, setShowAlert] = useState(false);
+
     const questionRef = useRef<HTMLInputElement|null>(null);
     const contextRef = useRef<HTMLInputElement|null>(null);
 
@@ -29,17 +35,20 @@ const Chat = () => {
     const handleSubmit = async () => {
         const question = questionRef.current?.value as string;
         const context = contextRef.current?.value as string;
-        console.log(context);
+
+        if ( !question || ! context) {
+            setShowAlert(true);
+            return;
+        }
+
         if(questionRef && questionRef.current) {
             questionRef.current.value = "";
-        }
-        
+        } 
+
         const newMessage = {role: "user",context, question};
         setChatmessage((prev) => [...prev, newMessage]);
-        console.log(chatMessage);
-        //const chatData = await sentChatRequest();
-        //setChatmessage([...chatData]);
-        
+        const chatData = await sentChatRequest(context, question);
+        setChatmessage([...chatData]);   
     }
 
     // Delete the current conversations
@@ -70,6 +79,19 @@ const Chat = () => {
         }
     }, [auth]);
 
+    // Handle delete Context
+    const handelDeleteContext = async () => {
+        if(contextRef && contextRef.current) {
+            contextRef.current.value = "";
+        }
+    }
+
+    // Auto scroll
+    useEffect(() => {
+        messageEndRef.current?.scrollIntoView({ behavior: "smooth"});
+    })
+
+    // If not login yet -> go to login
     useEffect(() => {
         if(!auth?.user) {
             nav("/login");
@@ -88,7 +110,8 @@ const Chat = () => {
             gap: 3,
         }}>
 
-        
+            {/* Box 1*/}
+            {!isSmallScreen && (
             <Box sx={{display: {md: "flex", xs: "none", sm: "none"}, flex: 0.2, flexDirection: "column"}} >
                 <Box sx={{
                     display: "flex", 
@@ -100,9 +123,9 @@ const Chat = () => {
                     mx: 4,
                 }} >
                     <Avatar  sx={{
-                        scale: 1.5,
+                        scale: 1.2,
                         mx: "auto", 
-                        my: 5, 
+                        my: 4, 
                         bgcolor: 
                         "white", 
                         color: "black", 
@@ -118,7 +141,7 @@ const Chat = () => {
                         fontFamily: "work sans", 
                         fontWeight: "600", 
                         textAlign: "center",
-                        fontSize: 30,
+                        fontSize: 25,
                     }}>
                         HỎI - ĐÁP TỪ VĂN BẢN
                     </Typography>
@@ -130,8 +153,8 @@ const Chat = () => {
                         mt: 4, 
                         fontWeight: "400", 
                         textAlign: "justify",
-                        fontSize: 20,
-                        my: 15,
+                        fontSize: 15,
+                        my: 10,
                     }}
                     >
                         Hãy thêm đoạn văn bản có các chủ đề về Kiến thức, Kinh doanh, Giáo dục, ... vào ô nội dung. 
@@ -142,7 +165,7 @@ const Chat = () => {
                     <Button 
                         onClick={handleDeleteChats}
                         sx={{
-                        width:"300px",
+                        width:"250px",
                         height: "50px",
                         mb: "30px", 
                         color:"white", 
@@ -150,7 +173,7 @@ const Chat = () => {
                         borderRadius: 3, 
                         mx: "auto",
                         bgcolor: red[300],
-                        fontSize: 20,
+                        fontSize: 15,
                         ":hover": {
                             bgcolor: red.A400,
                         }
@@ -159,9 +182,13 @@ const Chat = () => {
                     </Button>
                 </Box>
             </Box>
-            <Box sx={{display: "flex", flex: { md: 0.8, xs: 1, sm: 1}, flexDirection: "column", px: 3}}>
+            )}
+
+
+            {/* Box 2*/}
+            <Box sx={{display: "flex", flex: { md: "flex", xs: 1, sm: 1}, flexDirection: "column", px: 3, width: 0.8}}>
                 <Typography sx={{ 
-                    fontSize: "40px", 
+                    fontSize: "35px", 
                     color: "white", 
                     mb: 2, 
                     mx: "auto", 
@@ -171,37 +198,51 @@ const Chat = () => {
                 </Typography>
 
                 <Box sx={{ 
-                    width: "100%", 
-                    height: "50vh", 
+                    width: "97%", 
+                    height: "58vh", 
                     borderRadius: 3, 
                     mx:'auto', 
                     display: "flex", 
                     flexDirection: "column", 
                     overflow: "scroll", 
                     overflowX: "hidden",
-                    overflowY: 'auto',
                     scrollBehavior: "smooth",
+                    overflowY: 'auto',
+                    scrollbarWidth: 'none', // Firefox
+                    '&::-webkit-scrollbar': { display: 'none' }, // Chrome, Safari
+                    
                 }}>
+                    
                     {chatMessage.map((chat, index) => (
                         //@ts-ignore
-                        <ChatItem   role={chat.role} context={chat.context} question={chat.question} key={index}/>
+                        <ChatItem   role={chat.role} context={chat.context} question={chat.question} score={chat.score} key={index}/>
                     ))}
+                    <div ref={messageEndRef} />
 
                 </Box>
+
+                <Box display={"flex"} flexDirection={"row"} sx={{
+                    width:"95%", 
+                    padding: "15px", 
+                    borderRadius: 8, 
+                    backgroundColor: "rgb(17, 27, 39)",
+                    margin: "auto",
+                    marginBottom: "10px",
+                }}>
 
                     <TextField   
                         inputRef={contextRef}
                         multiline
                         fullWidth
-                        rows={5}
+                        rows={2}
                         variant="standard"
                         type='text'
-                        helperText="Vui lòng nhập nội dung"
+                        helperText="Vui lòng nhập văn bản của bạn vào đây."
                         InputProps={{
                             disableUnderline: true,
                             sx: {
                                 color: "white",
-                                fontSize: "20px",
+                                fontSize: "12px",
                                 margin: "10px",
                                 textAlign: "justify",
                             }
@@ -215,30 +256,36 @@ const Chat = () => {
                                     display: 'none',            
                                 },
                             },
-                            width:"95%", 
-                            padding: "20px", 
-                            borderRadius: 8, 
-                            backgroundColor: "rgb(17, 27, 39)",
                             display: 'flex',
                             height: "auto",
                             border: "none",
-                            margin: "auto",
-                            marginBottom: "20px",
                             outline: "none", 
                             color: "white", 
-                            fontSize: "20px",
+                            fontSize: "12px",
                             
                         }}
                           InputLabelProps={{
                             sx: { color: 'white' }
                         }}
                    />
-            
+                    <IconButton onClick= {handelDeleteContext} sx={{
+                        ml: "auto", 
+                        backgroundColor: red[400], 
+                        height: "35px", 
+                        width: "35px",  
+                        marginX: "20px",
+                        ":hover": {
+                            bgcolor: "#A6493D",
+                        }} }>
+                        <img src="delete-icon.png" alt="delete-icon" width={"40px"} color="red"/>
+                    </IconButton>
+                
+                </Box>
                
 
                 <div style={{
                     width:"95%", 
-                    padding: "20px", 
+                    padding: "15px", 
                     borderRadius: 25, 
                     backgroundColor: "rgb(17, 27, 39)",
                     display: 'flex',
@@ -264,7 +311,7 @@ const Chat = () => {
                             disableUnderline: true,
                             sx: {
                                 color: "white",
-                                fontSize: "20px"
+                                fontSize: "12px"
                             }
                         }}
                         sx = {{
@@ -278,7 +325,7 @@ const Chat = () => {
                             border: "none",
                             outline: "none", 
                             color: "white", 
-                            fontSize: "20px",
+                            fontSize: "15px",
                             
                         }}
                           InputLabelProps={{
@@ -287,9 +334,21 @@ const Chat = () => {
                     
                    />
                     <IconButton onClick= {handleSubmit} sx={{ml: "auto", color: "white"}}>
-                        <IoMdSend style={{fontSize: "40px"}}/>
+                        <IoMdSend style={{fontSize: "35px"}}/>
                     </IconButton>
                 </div>
+
+                {/* Alert nếu chưa nhập gì */}
+                <Snackbar
+                    open={showAlert}
+                    autoHideDuration={3000}
+                    onClose={() => setShowAlert(false)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Alert severity="info" onClose={() => setShowAlert(false)}>
+                    Vui lòng nhập văn bản trước khi gửi.
+                    </Alert>
+                </Snackbar>
 
             </Box>
         </Box>

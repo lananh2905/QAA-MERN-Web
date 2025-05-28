@@ -14,7 +14,7 @@ export const generateChatCompletion = async (
     try {
       
 
-      const { context, question, parameters } = req.body;
+      const { context, question } = req.body;
 
       if (!context || !question) {
         return res.status(400).json({ message: "Context and question are required" });
@@ -30,7 +30,7 @@ export const generateChatCompletion = async (
 
       // call api from hugging face
       
-      const response = await fetch("https://gty4rt35e4w5hr4k.us-east4.gcp.endpoints.huggingface.cloud", {
+      const response = await fetch(process.env.LINK_API, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${process.env.HUGGINGFACE_API_KEY}` || "",
