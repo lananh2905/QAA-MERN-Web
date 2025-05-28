@@ -1,0 +1,45 @@
+# Using a network name = " mern_network" to connect front-end, back-end, and MongoDB containers
+
+services:
+  backend:                                        # Name of the service
+    build: backend                              # Path to backend folder
+    ports:
+      - "5000:5000"                               # Map port of container to host
+    networks:
+      - mern_network                              # Connect to the network
+    environment:
+      MONGO_URI: mongodb://mongo:27017/chatbot  # Backend file db throughout container name = mongo
+    depends_on:
+      - mongodb                                   # Wait for MongoDB to start
+    volumes:
+      - ./backend:/app
+      - /app/node_modules                         # Sync code between host and container
+    command: npm run dev                          # Run the command to start the backend
+
+  frontend:
+    build: frontend
+    ports:
+      - "5173:5173"  
+    networks:
+      - mern_network
+    environment:
+      REACT_APP_API_URL: http://backend:5000 
+    command: npm run dev -- --host
+
+  mongodb:
+    image: mongo:latest          # Using lastest image of docker hub
+    ports:
+      - "27018:27017"            # Map port 27017 of container to host 27018
+    networks:
+      - mern_network
+    volumes:
+      - mongo-data:/data/db      # Save data in volume
+
+networks:                        # Define network: all containter can communicate with each other
+  mern_network:
+    driver: bridge 
+
+volumes:
+  mongo-data:
+    driver: local               # Persist MongoDB data locally
+

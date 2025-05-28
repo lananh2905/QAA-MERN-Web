@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Link } from 'react-router-dom';
 import { Typography } from '@mui/material';
 
@@ -34,7 +34,7 @@ const Logo = () => {
                     textShadow: "2px 2px 20px rgba(0, 0, 0, 0.3)"
                 }}>
 
-                    <span style={{ fontSize: "20px",}}>Chat Bot</span>-GPT
+                    <span style={{ fontSize: "20px",}}>QUESTION & ASWERING</span> - FROM CONTEXT
             </Typography>
 
         </div>

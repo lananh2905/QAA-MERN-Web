@@ -145,3 +145,40 @@ export const verifyUser = async (
         return res.status(500).json({message: "Error", error});
     }
 };
+
+// Log out
+export const userLogout = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+    ) => {
+    try {
+
+
+        // Check if the token existed
+        const user = await User.findById(res.locals.jwtData.id);
+        if (!user) {
+            return res.status(401).json({message: "User not registered OR Token expired"});
+        }
+
+        // Check current token with token of user 
+        if (user._id.toString() !== res.locals.jwtData.id) {
+            return res.status(401).json({message: "Permissions didn't match"});
+        }
+
+        // Clear the cookie if it exists
+        res.clearCookie(COOKIE_NAME, {
+            httpOnly: true,
+            signed: true, 
+            domain: "localhost",
+            path: "/",
+        })
+
+
+        return res.status(201).json({message: "Logout successfully"});
+    }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({message: "Error", error});
+    }
+};
