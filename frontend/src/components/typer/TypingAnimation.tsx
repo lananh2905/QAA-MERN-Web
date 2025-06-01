@@ -7,11 +7,11 @@ const TypingAnimation = () => {
         // Same substring at the start will only be typed out once, initially
         '',
         1000,
-        'Chat with your own AI 👽',
+        'Hỏi đáp với văn bản của bạn',
         2000,
-        'Build by Lan Anh 🙆',
+        'Build by ACDHT team 🙆',
         1500,
-        'Your own Customized DeepSeek ☑️',
+        'Model RoBERT-Large ☑️',
         1500
       ]}
       speed={50}

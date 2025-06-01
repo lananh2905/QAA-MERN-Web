@@ -35,27 +35,16 @@ const Login = () => {
     }, [auth])
 
     return (
-        <Box width={"100%"} height={"100%"} display="flex" flex={1}>
+        <Box 
+            width={"100%"} height={"100%"} display="flex" flex={1} flexDirection={"column"}
 
-
-            <Box 
-                padding = {8} 
-                mt={8} 
-                display={{md:"flex", xs: "none", sm: "none"}}
-            >
-                <img 
-                    src="airobot.png" 
-                    alt="Logo" 
-                    style={{ width: "400px"}}
-                />
-            </Box>
+        >
 
             <Box 
                 display="flex"
-                flex={{ xs: 1, md: 0.5 }}
                 justifyContent="center"
                 alignItems="center"
-                padding={2}
+                mx="auto"
                 ml={'auto'}
                 mt={16}
             >
@@ -79,7 +68,7 @@ const Login = () => {
                             padding={2}
                             fontWeight={600}
                         >
-                            LogIn
+                            Log in
                         </Typography>
                         <CustomizeInput type="email" name="email" label="Email" />
                         <CustomizeInput type="password" name="password" label="Password" />
@@ -103,7 +92,7 @@ const Login = () => {
                             }}
                             endIcon= {<GrLogin/>}
                             >
-                                Log in
+                                {"Log In"}
 
                         </Button>
                     </Box>

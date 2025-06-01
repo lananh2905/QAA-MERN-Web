@@ -14,11 +14,11 @@ const Logo = () => {
         }}>
             <Link to="/">
                 <img 
-                    src="openai.png" 
+                    src="ACDHT_logotop.png" 
                     alt="Logo" 
-                    width= {"30px"}
-                    height= {"30px"}
-                    className='image-inverted'
+                    width= {"60px"}
+                    height= {"70px"}
+                    
 
                 />
             </Link>

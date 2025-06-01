@@ -1,17 +1,19 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Box, Avatar, Typography, Button,  IconButton, TextField, Alert, Snackbar, useMediaQuery } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
+import { Box, Typography, IconButton, TextField, Alert, Snackbar, useMediaQuery } from "@mui/material";
 import { red } from "@mui/material/colors"
 import { useAuth } from "../context/AuthContext";
 import { ChatItem } from "../components/chat/ChatItem";
 import { IoMdSend } from "react-icons/io";
-import { delteteUserChats, getUserChats, sentChatRequest } from "../helpers/api-communicator";
+import { delteteUserChats, sentChatRequest } from "../helpers/api-communicator";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { ScrollHis } from "../components/ScrollHis";
 
 type Message = {
     role: string,
     context: string,
     question: string,
+    score?: number;
 }
 
 const Chat = () => {
@@ -19,6 +21,7 @@ const Chat = () => {
     const nav = useNavigate();
 
     const isSmallScreen = useMediaQuery('(max-width: 1200px');
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     const messageEndRef = useRef<HTMLInputElement|null>(null);
 
@@ -29,7 +32,16 @@ const Chat = () => {
 
     const auth = useAuth();
 
-    const [chatMessage, setChatmessage] = useState<Message[]>([]);
+    const [chatMessage, setChatMessage] = useState<Message[]>([]);
+
+    const [ chatId, setChatId] = useState<string>("");
+
+    // Handle Select chat from Scroll His
+    const handleSelectChats = (data : any) => {
+        setChatId(data.id)
+        setChatMessage(data.chat);
+    }
+
 
     // Handle press send message
     const handleSubmit = async () => {
@@ -46,9 +58,13 @@ const Chat = () => {
         } 
 
         const newMessage = {role: "user",context, question};
-        setChatmessage((prev) => [...prev, newMessage]);
-        const chatData = await sentChatRequest(context, question);
-        setChatmessage([...chatData]);   
+        setChatMessage((prev) => [...(prev ?? []), newMessage]);
+        const chatData = await sentChatRequest(chatId, context, question);
+        if(!chatId){
+            setRefreshTrigger(prev => prev + 1); 
+        }  
+        setChatId(chatData.id)
+        setChatMessage([...chatData.chat]);  
     }
 
     // Delete the current conversations
@@ -56,7 +72,7 @@ const Chat = () => {
         try {
             toast.loading("Deleting chats", {id: "deletechats"})
             await delteteUserChats();
-            setChatmessage([]);
+            setChatMessage([]);
             toast.success("Delete chats successfully", {id: "deletechats"})
         } catch (error)
         {
@@ -64,20 +80,6 @@ const Chat = () => {
             toast.error("Delete chats Failed", {id: "deletechats"})
         }
     }
-
-    // Load chats of user from database
-    useLayoutEffect(() => {
-        if(auth?.isLoggedIn && auth.user) {
-            toast.loading("Loading Chats", {id: "loadchats"})
-            getUserChats().then((data) => {
-                setChatmessage([...data.chats]);
-                toast.success("Load Chats successfully", {id: "loadchats"})
-            }).catch(err => {
-                console.log(err);
-                toast.error("Loading Chats Failed", {id: "loadchats"});
-            })
-        }
-    }, [auth]);
 
     // Handle delete Context
     const handelDeleteContext = async () => {
@@ -107,86 +109,13 @@ const Chat = () => {
             width: "100%", 
             height: "100%", 
             mt: 3, 
-            gap: 3,
         }}>
-
-            {/* Box 1*/}
             {!isSmallScreen && (
-            <Box sx={{display: {md: "flex", xs: "none", sm: "none"}, flex: 0.2, flexDirection: "column"}} >
-                <Box sx={{
-                    display: "flex", 
-                    width: 1, 
-                    height: "auto", 
-                    bgcolor:"rgb(17,29,39)",
-                    borderRadius: 10,
-                    flexDirection: "column",
-                    mx: 4,
-                }} >
-                    <Avatar  sx={{
-                        scale: 1.2,
-                        mx: "auto", 
-                        my: 4, 
-                        bgcolor: 
-                        "white", 
-                        color: "black", 
-                        fontWeight: 700,
-                    }}>
-                        { auth?.user?.name[0] }
-                        { auth?.user?.name.split(" ")[1][0] }
-                    </Avatar>
-
-                    <Typography sx={{
-                        display: "flex", 
-                        mx: "auto", 
-                        fontFamily: "work sans", 
-                        fontWeight: "600", 
-                        textAlign: "center",
-                        fontSize: 25,
-                    }}>
-                        HỎI - ĐÁP TỪ VĂN BẢN
-                    </Typography>
-
-
-                    <Typography sx={{
-                        mx: "30px", 
-                        fontFamily: "work sans", 
-                        mt: 4, 
-                        fontWeight: "400", 
-                        textAlign: "justify",
-                        fontSize: 15,
-                        my: 10,
-                    }}
-                    >
-                        Hãy thêm đoạn văn bản có các chủ đề về Kiến thức, Kinh doanh, Giáo dục, ... vào ô nội dung. 
-                        Sau đó các đặt câu hỏi về nội dung đó. 
-                        Tránh chia sẻ thông tin cá nhân của bạn.
-                    </Typography>
-
-                    <Button 
-                        onClick={handleDeleteChats}
-                        sx={{
-                        width:"250px",
-                        height: "50px",
-                        mb: "30px", 
-                        color:"white", 
-                        fontWeight:"700", 
-                        borderRadius: 3, 
-                        mx: "auto",
-                        bgcolor: red[300],
-                        fontSize: 15,
-                        ":hover": {
-                            bgcolor: red.A400,
-                        }
-                    }}>
-                        XÓA ĐOẠN HỘI THOẠI
-                    </Button>
-                </Box>
-            </Box>
+                <ScrollHis onClickSelectChats = {handleSelectChats} refresh={refreshTrigger}/>
             )}
 
-
             {/* Box 2*/}
-            <Box sx={{display: "flex", flex: { md: "flex", xs: 1, sm: 1}, flexDirection: "column", px: 3, width: 0.8}}>
+            <Box sx={{display: "flex", flex: { md: "flex", xs: 1, sm: 1}, flexDirection: "column", px: 3, width: 0.85}}>
                 <Typography sx={{ 
                     fontSize: "35px", 
                     color: "white", 
@@ -199,7 +128,7 @@ const Chat = () => {
 
                 <Box sx={{ 
                     width: "97%", 
-                    height: "58vh", 
+                    height: "50vh", 
                     borderRadius: 3, 
                     mx:'auto', 
                     display: "flex", 
@@ -213,7 +142,7 @@ const Chat = () => {
                     
                 }}>
                     
-                    {chatMessage.map((chat, index) => (
+                    {(chatMessage ?? []).map((chat, index) => (
                         //@ts-ignore
                         <ChatItem   role={chat.role} context={chat.context} question={chat.question} score={chat.score} key={index}/>
                     ))}
@@ -225,7 +154,7 @@ const Chat = () => {
                     width:"95%", 
                     padding: "15px", 
                     borderRadius: 8, 
-                    backgroundColor: "rgb(17, 27, 39)",
+                    backgroundColor: "rgb(0, 0, 0, 0.5)",
                     margin: "auto",
                     marginBottom: "10px",
                 }}>
@@ -287,7 +216,7 @@ const Chat = () => {
                     width:"95%", 
                     padding: "15px", 
                     borderRadius: 25, 
-                    backgroundColor: "rgb(17, 27, 39)",
+                    backgroundColor:"rgba(0, 0, 0, 0.5)",
                     display: 'flex',
                     margin: "auto",
                     alignItems: "center",
@@ -317,7 +246,6 @@ const Chat = () => {
                         sx = {{
                             width: "100%",
                             borderRadius: 8, 
-                            backgroundColor: "rgb(17, 27, 39)",
                             display: 'flex',
                             marginTop: "20px",
                             marginX: "20px",

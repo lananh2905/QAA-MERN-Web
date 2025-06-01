@@ -18,8 +18,8 @@ export const checkAuthStatus = async () => {
     return data;
 }
 
-export const sentChatRequest = async (context: string, question: string) => {
-    const res = await axios.post("/chat/new", {context, question});
+export const sentChatRequest = async (chatid: string, context: string, question: string) => {
+    const res = await axios.post("/chat/new", {chatid, context, question});
     if (res.status !== 200) {
         throw new Error("Unable to send message")
     }
@@ -58,6 +58,15 @@ export const SignupUser = async (name: string, email: string, password: string) 
     const res = await axios.post("/user/signup", {name, email, password});
     if (res.status !== 201) {
         throw new Error("Signup failed");
+    }
+    const data = await res.data;
+    return data;
+}
+
+export const getChatwithId = async (chatid: string) => {
+    const res = await axios.post("/chat/get-chats", {chatid});
+    if (res.status !== 200) {
+        throw new Error("Load chats failed");
     }
     const data = await res.data;
     return data;
