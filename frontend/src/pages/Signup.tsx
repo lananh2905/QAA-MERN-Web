@@ -36,19 +36,6 @@ const Signup = () => {
     return (
         <Box width={"100%"} height={"100%"} display="flex" flex={1}>
 
-
-            <Box 
-                padding = {8} 
-                mt={8} 
-                display={{md:"flex", xs: "none", sm: "none"}}
-            >
-                <img 
-                    src="airobot.png" 
-                    alt="Logo" 
-                    style={{ width: "400px"}}
-                />
-            </Box>
-
             <Box 
                 display="flex"
                 flex={{ xs: 1, md: 0.5 }}
@@ -57,6 +44,7 @@ const Signup = () => {
                 padding={2}
                 ml={'auto'}
                 mt={16}
+                mx="auto"
             >
                 <form 
                     onSubmit={(handleSubmit)}

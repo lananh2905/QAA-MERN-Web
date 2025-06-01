@@ -45,8 +45,8 @@ export const ChatItem = ({role, context, question, score} : {role: string, conte
                 my: 1,
             }}>
                 <Box display={"flex"} flexDirection={"row"} sx={{gap: 1, marginRight: "20px"}}>
-                    <Avatar sx ={{ml: "0", scale: 0.8}}>
-                        <img src="openai.png" alt="openai" width={"25px"} />
+                    <Avatar sx ={{ml: "0", scale: 0.8, backgroundColor: "white"}}>
+                        <img src="ACDHT_logo.png" alt="ACDHT_logo" width={"35px"} />
                     </Avatar> 
                     <Box sx={{marginY: "auto"}}>
 
