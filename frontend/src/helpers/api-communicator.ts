@@ -11,16 +11,19 @@ export const LoginUser = async (email: string, password: string) => {
 
 export const checkAuthStatus = async () => {
     const res = await axios.get("/user/auth-status");
-    if (res.status !== 201) {
+    if (res.status !== 201) 
+    {
         throw new Error("Unable to authenticate");
     }
     const data = await res.data;
+    console.log(`DATA FROM SERVER FIRST: ${data}`);
     return data;
 }
 
 export const sentChatRequest = async (chatid: string, context: string, question: string) => {
     const res = await axios.post("/chat/new", {chatid, context, question});
-    if (res.status !== 200) {
+    if (res.status !== 200) 
+    {
         throw new Error("Unable to send message")
     }
     const data = await res.data;

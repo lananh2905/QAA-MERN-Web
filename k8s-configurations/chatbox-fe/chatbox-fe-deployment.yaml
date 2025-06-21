@@ -1,0 +1,21 @@
+apiVersion:  apps/v1
+kind: Deployment
+metadata:
+  name: chatbox-fe
+  labels:
+    app: chatbox-fe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chatbox-fe
+  template:
+    metadata:
+      labels:
+        app: chatbox-fe
+    spec:
+      containers:
+      - name: chatbox-fe
+        image: onionsm/vn_qa_fe:latest
+        ports:
+        - containerPort: 5173

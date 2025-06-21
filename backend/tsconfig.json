@@ -1,11 +1,16 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "target": "ES2022",
-    "sourceMap": true,
-    "outDir": "dist",
-    "allowSyntheticDefaultImports": true
+    "target": "es2022", // Hoặc "esnext" - đảm bảo cú pháp JavaScript hiện đại
+    "module": "NodeNext", // QUAN TRỌNG: Biên dịch ra ES Modules tương thích với Node.js
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true, // QUAN TRỌNG: Cải thiện khả năng tương thích khi import module
+    "skipLibCheck": true,
+    // "allowImportingTsExtensions": true, // Xóa hoặc comment dòng này
+    // "noEmit": true, // Xóa hoặc comment dòng này
+    "moduleResolution": "NodeNext", // QUAN TRỌNG: Cách TypeScript giải quyết các đường dẫn module
+    "forceConsistentCasingInFileNames": true // Luôn nên có
   },
-  "include": ["src/**/*.ts", "src/index.ts"]
+  "include": ["src/**/*.ts","src/**/*.js", "src/index.ts", "src/app.ts"]
 }

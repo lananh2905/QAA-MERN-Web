@@ -21,7 +21,6 @@ const CustomizeInput = ({ name, type, label }: Props) => {
                 color: "white",
                 borderRadius: "10px", 
                 fontSize: "20px",
-
             }}}
         />
     );

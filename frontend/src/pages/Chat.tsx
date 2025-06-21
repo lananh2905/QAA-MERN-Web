@@ -7,7 +7,8 @@ import { IoMdSend } from "react-icons/io";
 import { delteteUserChats, sentChatRequest } from "../helpers/api-communicator";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { ScrollHis } from "../components/ScrollHis";
+import ScrollHis from "../components/ScrollHis";
+import he from 'he';
 
 type Message = {
     role: string,
@@ -41,19 +42,49 @@ const Chat = () => {
         setChatId(data.id)
         setChatMessage(data.chat);
     }
+   
 
+    function normalizeInput(text: string): string 
+    {
+        let decoded = he.decode(text);
+
+        // Xóa thẻ HTML
+        decoded = decoded.replace(/<[^>]+>/g, ' ');
+
+        // Xóa emoji
+        const emojiPattern = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]+/gu;
+        decoded = decoded.replace(emojiPattern, '');
+
+        // Xóa dấu ngoặc kép (mọi loại)
+        decoded = decoded.replace(/["\u201C\u201D\u201E\u201F\u2033\u00AB\u00BB]/g, '');
+
+        // Xóa ký tự tàng hình, xuống dòng ẩn
+        decoded = decoded.replace(/[\x00-\x1F\u200b\u200e\u202c\u2060]/g, '');
+
+        // Gộp các dòng thành 1 dòng
+        decoded = decoded.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        decoded = decoded.replace(/\n+/g, ' ');
+
+        // Chuẩn hóa khoảng trắng
+        decoded = decoded.replace(/\s+/g, ' ');
+
+        return decoded.trim();
+    }
 
     // Handle press send message
-    const handleSubmit = async () => {
-        const question = questionRef.current?.value as string;
-        const context = contextRef.current?.value as string;
+    const handleSubmit = async () => 
+    {
+        const question = normalizeInput(questionRef.current?.value as string);
+        const context = normalizeInput(contextRef.current?.value as string);
 
-        if ( !question || ! context) {
+        if ( !question || ! context) 
+        {
             setShowAlert(true);
             return;
         }
 
-        if(questionRef && questionRef.current) {
+        if(questionRef && questionRef.current) 
+        {
             questionRef.current.value = "";
         } 
 
@@ -110,10 +141,10 @@ const Chat = () => {
             height: "100%", 
             mt: 3, 
         }}>
-            {!isSmallScreen && (
+            {/* {!isSmallScreen && (
                 <ScrollHis onClickSelectChats = {handleSelectChats} refresh={refreshTrigger}/>
-            )}
-
+            )} */}
+            <ScrollHis onClickSelectChats = {handleSelectChats} refresh={refreshTrigger}/>
             {/* Box 2*/}
             <Box sx={{display: "flex", flex: { md: "flex", xs: 1, sm: 1}, flexDirection: "column", px: 3, width: 0.85}}>
                 <Typography sx={{ 

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatbox-service
+  labels:
+    app: chatbox-service
+spec:
+  selector:
+    app: chatbox
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 5000  
+      targetPort: 5000
+      nodePort: 30001

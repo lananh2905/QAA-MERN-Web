@@ -2,3 +2,6 @@
 **.env
 **package-lock.json
 **dist
+*-configmap.yaml
+*-secret.yaml
+*-keyfile.yaml

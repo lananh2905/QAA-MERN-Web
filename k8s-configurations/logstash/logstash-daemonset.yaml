@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: logstash
+spec:
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+      - name: logstash
+        image: docker.elastic.co/logstash/logstash:8.12.2
+        env:
+          - name: "LS_JAVA_OPTS"
+            value: "-Xmx1g -Xms1g"
+          - name: "PIPELINE_WORKERS"
+            value: "2"
+          - name: "PIPELINE_BATCH_SIZE"
+            value: "125"
+        command: ["/usr/share/logstash/bin/logstash"]
+        args:
+          - "-f"
+          - "/usr/share/logstash/pipeline/logstash.conf"
+          - "--path.settings"
+          - "/usr/share/logstash/custom-config"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 5044
+          name: beats
+          protocol: TCP
+        volumeMounts:
+          - name: logstash-config
+            mountPath: /usr/share/logstash/pipeline/logstash.conf
+            subPath: logstash.conf
+          - name: logstash-config
+            mountPath: /usr/share/logstash/custom-config/logstash.yml
+            subPath: logstash.yml
+        # probes như cũ
+      volumes:
+      - name: logstash-config
+        configMap:
+          name: logstash-config

@@ -15,11 +15,14 @@ const Login = () => {
         const formData = new FormData(e.currentTarget);
         const email = formData.get("email");
         const password = formData.get("password");
-        try {
+        try 
+        {
             toast.loading("Logging in...", {id: "login"})
             await auth?.login(email as string, password as string);
             toast.success("Logged in successfully", {id: "login"});
-        } catch (error) {
+        } 
+        catch (error) 
+        {
             console.log(error);
             toast.error("Login failed", {id: "login"});
         }

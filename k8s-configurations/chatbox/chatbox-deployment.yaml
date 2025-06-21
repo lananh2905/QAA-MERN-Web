@@ -1,0 +1,99 @@
+apiVersion:  apps/v1
+kind: Deployment
+metadata:
+  name: chatbox
+  labels:
+    app: chatbox
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chatbox
+  template:
+    metadata:
+      labels:
+        app: chatbox
+    spec:
+      containers:
+      - name: chatbox
+        image: onionsm/vn_qa_be:latest
+        ports:
+        - containerPort: 5000
+        env: 
+        - name: MONGO_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: chatbox-secret
+              key: MONGODB_USERNAME
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: chatbox-secret
+              key: MONGODB_PASSWORD
+        - name: MONGO_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: chatbox-configmap
+              key: MONGO_DATABASE
+        - name: PRIMARY_MONGO_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: chatbox-configmap
+              key: PRIMARY_MONGO_NAME
+        - name: MONGO_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: chatbox-configmap
+              key: MONGO_HOST
+
+        - name: AUTH_MECHANISM
+          valueFrom:
+            configMapKeyRef:
+              name: chatbox-configmap
+              key: AUTH_MECHANISM    
+
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: chatbox-secret
+              key: JWT_SECRET_KEY
+
+        - name: COOKIE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: chatbox-secret
+              key: COOKIE_SECRET
+
+        - name: Issuer
+          valueFrom:
+            configMapKeyRef:
+              name: chatbox-configmap
+              key: Issuer
+        - name: Audience
+          valueFrom:
+            configMapKeyRef:
+              name: chatbox-configmap
+              key: Audience
+        - name: TokenLifespan
+          valueFrom:
+            configMapKeyRef:
+              name: chatbox-configmap
+              key: TokenLifespan
+
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: chatbox-configmap
+              key: PORT
+        
+        - name: FE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: chatbox-configmap
+              key: FE_HOST
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: chatbox-configmap
+              key: NODE_ENV
+          

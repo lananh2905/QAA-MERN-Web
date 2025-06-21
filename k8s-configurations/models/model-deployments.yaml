@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: model-qaa
+  labels:
+    app: model-qaa
+spec:
+  replicas: 1
+  selector:
+    matchLabels: 
+      app: model-qaa
+  template:
+    metadata:
+      labels:
+        app: model-qaa
+    spec:
+      containers:
+      - name: model-qaa
+        image: onionsm/vn_qa:latest
+        ports:
+        - containerPort: 8386

@@ -10,78 +10,98 @@ const PAWAN_API_KEY="pk-adkmGIRjGvykzduHnNCbMMKYwmDEkKeJHMlpTytInZwmbrUT"
 
 // Generate chat completiong
 export const generateChatCompletion = async (
-      req: Request, 
-      res: Response,
-      next: NextFunction,
-    ) => {
+  req: Request, 
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { chatid, context, question } = req.body;
 
-    try {
-      
-      const {chatid, context, question } = req.body;
+    if (!context || !question) {
+      return res.status(400).json({ message: "Context and question are required" });
+    }
 
-      if (!context || !question) {
-        return res.status(400).json({ message: "Context and question are required" });
-      }
+    const user = await User.findById(res.locals.jwtData.id);
+    if (!user) {
+      return res.status(401).json({ message: "User not registered OR Token expired" });
+    }
 
-      const user = await User.findById(res.locals.jwtData.id);
-      if (!user) {
-          return res.status(401).json({message: "User not registered OR Token expired"});
-      }
-
-      let chats = await Chats.findOne({ id: chatid });
-
-
-      // Check chats existed
-      if (!chats) {
-        // Create new chats
-        chats = new Chats({
-          userid: user.id,
-          title: question,
-          chat: [],
-        })
-      }
-
-      chats.chat.push({role: "user", context: context, question: question});
-      await chats.save();
-
-      // call api from hugging face
-      const response = await fetch(process.env.LINK_API, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.HUGGINGFACE_API_KEY}` || "",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          inputs: {
-            question,
-            context,
-          },
-          options: {
-            wait_for_model: true
-      }})
+    let chats = await Chats.findOne({ id: chatid });
+    if (!chats) {
+      chats = new Chats({
+        userid: user.id,
+        title: question,
+        chat: [],
       });
-      if (!response.ok) {
-        throw new Error(`Hugging Face API error: ${response.statusText}`);
-      }
+    }
 
-      const result = await response.json();
+    chats.chat.push({
+      role: "user",
+      context: context,
+      question: question
+    });
 
-      // Add chat reponse into user
-      chats.chat.push({ role: "assistant", context: context, question: result.answer, score: result.score});
-      await chats.save();
+    await chats.save();
 
-      return res.status(200).json(chats); 
-
-    }  catch (err: any) {
-        console.error("Error generating chat completion:", err);
-        res.status(500).json({
-          message: "Something went wrong while generating the answer",
-          error: err.message,
-        });
-      }
-
+    const payload = {
+      question,
+      context
     };
 
+    const response = await fetch("http://34.70.188.101:30000/answer/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    let result;
+    if (response.ok) 
+    {
+      // Chỉ đọc JSON một lần duy nhất nếu status 2xx
+      result = await response.json();
+      if (!result || !result.answer) {
+        // Gọi model trả về dạng JSON mà KHÔNG có answer
+        return res.status(502).json({ message: "Model server trả về dữ liệu không hợp lệ", result });
+      }
+    } else {
+      // Lấy body ra text để debug/log (chỉ đọc 1 lần!) 
+      const errorText = await response.text();
+      // Nếu muốn thử parse JSON thì bạn có thể thêm đoạn thử-catch nhỏ
+      // let errorJson;
+      // try {
+      //   errorJson = JSON.parse(errorText);
+      // } catch { }
+      return res.status(response.status).json({
+        message: "Model server trả về lỗi",
+        error: errorText
+        // ...(errorJson ? {errorJson} : {})
+      });
+    }
+
+    // Ghi log OK
+    console.log("RESULT", result);
+
+    // Add model result vào chat
+    chats.chat.push({
+      role: "assistant",
+      context: context,
+      question: result.answer,
+      score: result.score   // Nhớ kiểm tra nếu result có trường này
+    });
+    await chats.save();
+
+    return res.status(200).json(chats);
+
+  } catch (err: any) {
+    console.error("Error generating chat completion:", err);
+    res.status(500).json({
+      message: "Something went wrong while generating the answer",
+      error: err.message,
+    });
+  }
+};
 
 // Get all chats of users
 export const sendChatToUser = async (

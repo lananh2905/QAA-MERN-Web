@@ -72,9 +72,9 @@ export const ChatItem = ({role, context, question, score} : {role: string, conte
 
                     </Box>
                 </Box>
-                <Box sx={{mx: "30px"}}>
+                {/* <Box sx={{mx: "30px"}}>
                     <Typography fontSize={"12px"}>Score: {score.toFixed(2)}</Typography>
-                </Box>
+                </Box> */}
 
             </Box> 
         ) : (
