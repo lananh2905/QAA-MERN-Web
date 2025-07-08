@@ -105,3 +105,6 @@ docker-compose up --build
 ### Built With
 ```
 
+# VIDEO DEMO
+![Demo](video_demo.gif)
+
